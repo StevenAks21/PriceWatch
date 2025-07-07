@@ -12,10 +12,7 @@ openai.api_key = APIKey
 currTime = time.ctime(time.time())
 
 #Setting ChatGPT Up
-BotResponse = openai.responses.create(
-    model = 'gpt-4.1',
-    input = f'hi, guess whgere im from, its now exactly {currTime}'
-)
+print(get('https://www.investing.com/currencies/eur-usd-historical-data').text)
+content = get('https://www.investing.com/currencies/eur-usd-historical-data').text
 
-print(BotResponse.output_text)
-print(currTime)
+open('x.html', 'w', encoding='utf-8').write(content)
