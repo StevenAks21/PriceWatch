@@ -1,0 +1,24 @@
+from playwright.sync_api import sync_playwright
+import time
+
+def screenshot_chart():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page(viewport={"width": 1280, "height": 720})
+
+        # Load 5-minute candlestick chart
+        page.goto("https://www.tradingview.com/chart/?symbol=FX:EURUSD&interval=5", timeout=30000)
+        page.wait_for_timeout(7000)  # give JS & chart time to render
+
+        # Save screenshot with timestamp
+        timestamp = time.strftime("%Y-%m-%d_%H-%M")
+        filename = f"eurusd_{timestamp}.png"
+        page.screenshot(path=filename, full_page=True)
+
+        print(f"✅ Saved: {filename}")
+        browser.close()
+
+# Optional: run every 5 minutes
+while True:
+    screenshot_chart()
+    time.sleep(300)
