@@ -16,7 +16,7 @@ currTime = time.ctime(time.time())
 url = 'https://www.investing.com/currencies/eur-usd-historical-data'
 content = get(url).text
 price = re.findall(r'data-test="instrument-price-last">([\d.]+)</div>', content)[0]
-
+print(price)
 open('x.html', 'w', encoding='utf-8').write(content)
 
 
