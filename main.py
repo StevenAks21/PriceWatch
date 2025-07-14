@@ -4,6 +4,7 @@ import openai
 from dotenv import load_dotenv
 import os
 import re
+import base64
 
 # Initial setup
 load_dotenv()
@@ -20,6 +21,8 @@ price = float(re.findall(r'data-test="instrument-price-last">([\d.]+)</div>', co
 
 
 #Ask for AI Opinion
+
+
 response = Bot.responses.create(model= 'gpt-4.1', input='hi!, say something in indonesian')
 print(response.output_text)
 open('x.html', 'w', encoding='utf-8').write(content)
