@@ -21,8 +21,21 @@ price = float(re.findall(r'data-test="instrument-price-last">([\d.]+)</div>', co
 
 
 #Ask for AI Opinion
+image_path = 'eurusd_2025-07-07_18-04.png'
+with open(image_path, 'rb') as image_file:
+    image_bytes = image_file.read()
+    base64image = base64.b64encode(image_bytes).decode('utf-8')
 
-
-response = Bot.responses.create(model= 'gpt-4.1', input='hi!, say something in indonesian')
+response = Bot.responses.create(model= 'gpt-4.1', input =
+[
+    {
+        "role" : "user",
+        "content" : 
+        [
+            {'type' : 'input_text', 'text' : 'hi'},
+            {'type' : 'input_image', 'image_url' : f'data:image/png;base64,{base64image}'}
+        ]
+    }
+])
 print(response.output_text)
 open('x.html', 'w', encoding='utf-8').write(content)
