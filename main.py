@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 import os
 import re
 import base64
+from functions import screenshot_chart
+
 
 # Initial setup
 load_dotenv()
@@ -21,6 +23,7 @@ price = float(re.findall(r'data-test="instrument-price-last">([\d.]+)</div>', co
 
 
 #Ask for AI Opinion
+screenshot_chart.screenshot_chart()
 image_path = 'eurusd_2025-07-07_18-04.png'
 with open(image_path, 'rb') as image_file:
     image_bytes = image_file.read()
