@@ -18,8 +18,3 @@ def screenshot_chart():
 
         print(f"✅ Saved: {filename}")
         browser.close()
-
-# Optional: run every 5 minutes
-while True:
-    screenshot_chart()
-    time.sleep(10)

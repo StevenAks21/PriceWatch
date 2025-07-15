@@ -20,6 +20,7 @@ currTime = time.ctime(time.time())
 url = 'https://www.investing.com/currencies/eur-usd-historical-data'
 content = get(url).text
 price = float(re.findall(r'data-test="instrument-price-last">([\d.]+)</div>', content)[0])
+print(f'test price is {price}')
 
 
 #Ask for AI Opinion
