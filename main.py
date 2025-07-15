@@ -32,7 +32,7 @@ response = Bot.responses.create(model= 'gpt-4.1', input =
         "role" : "user",
         "content" : 
         [
-            {'type' : 'input_text', 'text' : 'hi'},
+            {'type' : 'input_text', 'text' : 'hi, what do you see on the image? whats your prediciton'},
             {'type' : 'input_image', 'image_url' : f'data:image/png;base64,{base64image}'}
         ]
     }
