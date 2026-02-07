@@ -1,4 +1,3 @@
-# functions/getPrice.py
 import os
 from dotenv import load_dotenv
 from twelvedata import TDClient

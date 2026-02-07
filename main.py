@@ -1,20 +1,18 @@
-# main.py
+from flask import Flask, jsonify
 from functions.getPrice import getPrice
-from flask import Flask
 
 app = Flask(__name__)
 
+@app.route('/api/price')
+def get_price_json():
+    current_price = getPrice("EUR/USD")
+    data = {
+        "symbol": "EUR/USD",
+        "price": float(current_price),
+        "target_hit": float(current_price) > 1.0850,
+        "unit": "USD"
+    }
+    return jsonify(data)
 
-@app.route('/')
-def home():
-    return 'hi'
-
-
-# Now call the function and store the result
-current_price = getPrice("EUR/USD")
-
-print(f"The current price is: {current_price}")
-
-# Now you can use this for your alerts!
-if float(current_price) > 1.0850:
-    print("Price target hit! ")
+if __name__ == "__main__":
+    app.run(debug=True)
