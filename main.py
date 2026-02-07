@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
 from functions.getPrice import getPrice
-from functions.db import init_db
+from functions.db import init_db, check_unique_user, insert_user
 import bcrypt
+import sqlite3
 
 init_db()
 
@@ -12,10 +13,22 @@ def register():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-
     
+    try:
+        insert_user(username, password)
+    except sqlite3.IntegrityError:
+        json = {"status" : "failed", 'message' : 'username already exists'}
+        return jsonify(json), 400
 
     return jsonify({"status" :" success" , "message" : f'received data for {username}'}), 201
+
+@app.route('/api/login', methods = ['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    
 
 @app.route('/api/price')
 def get_price_json():
