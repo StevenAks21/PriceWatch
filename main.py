@@ -1,10 +1,20 @@
-from dotenv import load_dotenv
-import os
-from twelvedata import TDClient
+# main.py
+from functions.getPrice import getPrice
+from flask import Flask
 
-load_dotenv()
-api_key = os.getenv('API_KEY')
-print(api_key)
+app = Flask(__name__)
 
-td = TDClient(api_key)
 
+@app.route('/')
+def home():
+    return 'hi'
+
+
+# Now call the function and store the result
+current_price = getPrice("EUR/USD")
+
+print(f"The current price is: {current_price}")
+
+# Now you can use this for your alerts!
+if float(current_price) > 1.0850:
+    print("Price target hit! ")
