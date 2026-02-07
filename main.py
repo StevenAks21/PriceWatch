@@ -1,8 +1,13 @@
 from flask import Flask, jsonify, request
 from functions.getPrice import getPrice
-from functions.db import init_db, check_unique_user, insert_user
+from functions.db import init_db, insert_user
 import bcrypt
 import sqlite3
+import os
+import dotenv
+
+dotenv.load_dotenv()
+os.getenv("")
 
 init_db()
 
@@ -19,6 +24,7 @@ def register():
     except sqlite3.IntegrityError:
         json = {"status" : "failed", 'message' : 'username already exists'}
         return jsonify(json), 400
+        
 
     return jsonify({"status" :" success" , "message" : f'received data for {username}'}), 201
 
@@ -27,6 +33,11 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+    hashedPassword = bcrypt.hashpw(password, )
+    print(hashedPassword)
+
+    return jsonify({'hashed' : hashedPassword}), 201
+
 
     
 
