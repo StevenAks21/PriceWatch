@@ -1,5 +1,11 @@
 import sqlite3
 from pathlib import Path
+import bcrypt
+import dotenv
+import os
+
+dotenv.load_dotenv()
+SECRET = os.getenv('SECRET').encode()
 
 current_dir = Path(__file__).resolve().parent
 db_path = (current_dir / ".." / "db" / "users.db").resolve()
@@ -18,8 +24,6 @@ def init_db():
         conn.execute(statement)
         conn.commit()
 
-
-
 def insert_user(username, password):
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -27,3 +31,16 @@ def insert_user(username, password):
         statement = 'INSERT INTO users (username, password) VALUES (?, ?)'
         cursor.execute(statement, (username, password))
         conn.commit()
+
+def check_password(username, password):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+
+        statement = 'SELECT * FROM users WHERE username = ?'
+        result = cursor.execute(statement, (username,)).fetchone()
+
+        if result is None:
+            return False
+
+        stored_hash = result[1]
+        return bcrypt.checkpw(password + SECRET, stored_hash)
