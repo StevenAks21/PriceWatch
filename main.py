@@ -5,13 +5,29 @@ import bcrypt
 import sqlite3
 import os
 import dotenv
+import jwt
+from datetime import datetime, timedelta
 
 dotenv.load_dotenv()
 SECRET = os.getenv('SECRET').encode()
+JWT_SECRET = os.getenv('JWT_SECRET', os.getenv('SECRET')).encode()
 
 init_db()
 
 app = Flask(__name__)
+
+def verify_jwt_from_request():
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return None, (jsonify({"status": "failed", "message": "missing bearer token"}), 401)
+    token = auth_header.split(" ", 1)[1].strip()
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        return payload, None
+    except jwt.ExpiredSignatureError:
+        return None, (jsonify({"status": "failed", "message": "token expired"}), 401)
+    except jwt.InvalidTokenError:
+        return None, (jsonify({"status": "failed", "message": "invalid token"}), 401)
 
 @app.route('/api/register', methods = ['POST'])
 def register():
@@ -37,15 +53,21 @@ def login():
     password = data.get('password').encode()
 
     if check_password(username, password):
-        return jsonify({"status": "success"}), 200
+        payload = {
+            "sub": username,
+            "iat": datetime.utcnow(),
+            "exp": datetime.utcnow() + timedelta(hours=12),
+        }
+        token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+        return jsonify({"status": "success", "token": token}), 200
     else:
         return jsonify({"status": "failed", "message": "invalid credentials"}), 401
 
-    
-    
-
 @app.route('/api/price')
 def get_price_json():
+    _, error_response = verify_jwt_from_request()
+    if error_response:
+        return error_response
     current_price = getPrice("EUR/USD")
     data = {
         "symbol": "EUR/USD",
