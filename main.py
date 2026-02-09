@@ -6,7 +6,6 @@ import sqlite3
 import os
 import dotenv
 
-
 dotenv.load_dotenv()
 SECRET = os.getenv('SECRET').encode()
 
@@ -27,6 +26,7 @@ def register():
     except sqlite3.IntegrityError:
         json = {"status" : "failed", 'message' : 'username already exists'}
         return jsonify(json), 400
+        
 
     return jsonify({"status" :" success" , "message" : f'received data for {username}'}), 201
 
@@ -42,7 +42,6 @@ def login():
         return jsonify({"status": "failed", "message": "invalid credentials"}), 401
 
     
-
     
 
 @app.route('/api/price')
