@@ -63,17 +63,24 @@ def login():
     else:
         return jsonify({"status": "failed", "message": "invalid credentials"}), 401
 
-@app.route('/api/price')
+@app.route('/api/price', methods = ['GET'])
 def get_price_json():
     _, error_response = verify_jwt_from_request()
     if error_response:
         return error_response
-    current_price = getPrice("EUR/USD")
+    symbol = request.args.get('symbol')
+    print(symbol)
+    if symbol == None:
+        data = {
+            "status" : 'Failed',
+            "message" : 'Symbol is required!'
+        }
+        return jsonify(data), 400
+    current_price = getPrice(symbol)
     data = {
-        "symbol": "EUR/USD",
+        "status" : 'Success',
+        "symbol": symbol,
         "price": float(current_price),
-        "target_hit": float(current_price) > 1.0850,
-        "unit": "USD"
     }
     return jsonify(data)
 
