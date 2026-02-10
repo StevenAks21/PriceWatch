@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from functions.getPrice import getPrice
-from functions.db import init_db, insert_user, check_password
+from functions.db import init_db, insert_user, check_password, get_user_id, insert_position, list_positions, delete_position
 import bcrypt
 import sqlite3
 import os
@@ -62,6 +62,94 @@ def login():
         return jsonify({"status": "success", "token": token}), 200
     else:
         return jsonify({"status": "failed", "message": "invalid credentials"}), 401
+    
+
+@app.route('/api/add_position', methods = ['POST'])
+def add_position_route():
+    payload, error_response = verify_jwt_from_request()
+    if error_response:
+        return error_response
+
+    data = request.get_json()
+    symbol = data.get('symbol')
+    quantity = data.get('quantity')
+    entry_price = data.get('entry_price')
+    side = data.get('side', 'long')
+
+    if symbol is None or quantity is None or entry_price is None:
+        return jsonify({"status": "failed", "message": "symbol, quantity, entry_price required"}), 400
+    if side not in ["long", "short"]:
+        return jsonify({"status": "failed", "message": "side must be 'long' or 'short'"}), 400
+
+    user_id = get_user_id(payload["sub"])
+    if user_id is None:
+        return jsonify({"status": "failed", "message": "user not found"}), 404
+
+    try:
+        quantity = float(quantity)
+        entry_price = float(entry_price)
+    except (TypeError, ValueError):
+        return jsonify({"status": "failed", "message": "quantity and entry_price must be numbers"}), 400
+
+    position_id = insert_position(user_id, symbol.upper(), quantity, entry_price, side)
+    return jsonify({"status": "success", "id": position_id}), 201
+
+@app.route('/api/positions', methods = ['GET'])
+def view_positions_route():
+    payload, error_response = verify_jwt_from_request()
+    if error_response:
+        return error_response
+
+    user_id = get_user_id(payload["sub"])
+    if user_id is None:
+        return jsonify({"status": "failed", "message": "user not found"}), 404
+
+    positions = list_positions(user_id)
+    results = []
+    total_pnl = 0.0
+
+    for pos in positions:
+        position_id, symbol, quantity, entry_price, side, created_at = pos
+        price = getPrice(symbol)
+        try:
+            current_price = float(price)
+        except (TypeError, ValueError):
+            current_price = None
+
+        if current_price is None:
+            pnl = None
+        else:
+            direction = 1.0 if side == "long" else -1.0
+            pnl = (current_price - entry_price) * quantity * direction
+            total_pnl += pnl
+
+        results.append({
+            "id": position_id,
+            "symbol": symbol,
+            "quantity": quantity,
+            "entry_price": entry_price,
+            "side": side,
+            "created_at": created_at,
+            "current_price": current_price,
+            "pnl": pnl,
+        })
+
+    return jsonify({"status": "success", "total_pnl": total_pnl, "positions": results}), 200
+
+@app.route('/api/positions/<int:position_id>', methods = ['DELETE'])
+def remove_position_route(position_id):
+    payload, error_response = verify_jwt_from_request()
+    if error_response:
+        return error_response
+
+    user_id = get_user_id(payload["sub"])
+    if user_id is None:
+        return jsonify({"status": "failed", "message": "user not found"}), 404
+
+    deleted = delete_position(user_id, position_id)
+    if not deleted:
+        return jsonify({"status": "failed", "message": "position not found"}), 404
+    return jsonify({"status": "success"}), 200
 
 @app.route('/api/price', methods = ['GET'])
 def get_price_json():
@@ -69,7 +157,6 @@ def get_price_json():
     if error_response:
         return error_response
     symbol = request.args.get('symbol')
-    print(symbol)
     if symbol == None:
         data = {
             "status" : 'Failed',
